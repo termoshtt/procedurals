@@ -1,6 +1,6 @@
 [package]
 name = "enum-error-derive"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Toshiki Teramura <toshiki.teramura@gmail.com>"]
 
 description = "Derive Error traits"
