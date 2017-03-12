@@ -1,19 +1,17 @@
 language: rust
-sudo: required
 
 rust:
   - stable
   - beta
   - nightly
 
-os:
-  - linux
-
-cache: cargo
-
 matrix:
-  allow-failures:
+  allow_failures:
     - rust: nightly
 
 script:
-  - cargo test
+  - cargo build --verbose
+  - cargo test --verbose
+
+env:
+  - RUST_BACKTRACE=1
