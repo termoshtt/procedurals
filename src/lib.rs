@@ -14,19 +14,15 @@ pub fn enum_error(input: TokenStream) -> TokenStream {
     gen.parse().unwrap()
 }
 
-fn impl_enum_error(ast: &syn::MacroInput) -> quote::Tokens {
-    let name = &ast.ident;
-    let ref variants = match ast.body {
-        syn::Body::Enum(ref variants) => variants,
-        syn::Body::Struct(_) => unreachable!(),
-    };
+fn impl_from_traits(name: &syn::Ident, variants: &Vec<syn::Variant>) -> quote::Tokens {
     variants.iter()
         .map(|var| {
+            let v = &var.ident;
             let cont = match var.data {
                 syn::VariantData::Tuple(ref c) => c,
                 _ => unreachable!(),
             };
-            let v = &var.ident;
+            assert!(cont.len() == 1, "Single Tuple is required");
             let ctype = &cont[0].ty;
             quote!{
                 impl From<#ctype> for #name {
@@ -40,4 +36,57 @@ fn impl_enum_error(ast: &syn::MacroInput) -> quote::Tokens {
             cum.append(a);
             cum
         })
+}
+
+fn impl_error(name: &syn::Ident, variants: &Vec<syn::Variant>) -> quote::Tokens {
+    let snips = variants.iter()
+        .map(|var| {
+            let v = &var.ident;
+            quote!{ #name::#v(ref err) => err.fmt(f), }
+        })
+        .fold(quote::Tokens::new(), |mut cum, a| {
+            cum.append(a);
+            cum
+        });
+    quote!{
+        impl error::Error for #name {
+            fn description(&self) -> &str {
+                match *self {
+                    #snips
+                }
+            }
+        }
+    }
+}
+
+fn impl_display(name: &syn::Ident, variants: &Vec<syn::Variant>) -> quote::Tokens {
+    let snips = variants.iter()
+        .map(|var| {
+            let v = &var.ident;
+            quote!{ #name::#v(ref err) => err.description(), }
+        })
+        .fold(quote::Tokens::new(), |mut cum, a| {
+            cum.append(a);
+            cum
+        });
+    quote!{
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            match *self {
+                #snips
+            }
+        }
+    }
+}
+
+fn impl_enum_error(ast: &syn::MacroInput) -> quote::Tokens {
+    let name = &ast.ident;
+    let ref variants = match ast.body {
+        syn::Body::Enum(ref variants) => variants,
+        syn::Body::Struct(_) => unreachable!(),
+    };
+    let mut token = quote::Tokens::new();
+    token.append_all(&[impl_from_traits(&name, &variants),
+                       impl_display(&name, &variants),
+                       impl_error(&name, &variants)]);
+    token
 }
