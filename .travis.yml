@@ -1,0 +1,19 @@
+language: rust
+sudo: required
+
+rust:
+  - stable
+  - beta
+  - nightly
+
+os:
+  - linux
+
+cache: cargo
+
+matrix:
+  allow-failures:
+    - rust: nightly
+
+script:
+  - cargo test
