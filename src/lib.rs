@@ -59,7 +59,7 @@ fn impl_display(name: &syn::Ident, variants: &Vec<syn::Variant>) -> quote::Token
             quote!{ #name::#v(ref err) => err.fmt(f) }
         });
     quote!{
-        impl ::std::fmt::Display for Error {
+        impl ::std::fmt::Display for #name {
             fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
                 match *self {
                     #(#snips), *
