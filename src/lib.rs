@@ -42,14 +42,14 @@ fn impl_error(name: &syn::Ident, variants: &Vec<syn::Variant>) -> quote::Tokens 
     let snips = variants.iter()
         .map(|var| {
             let v = &var.ident;
-            quote!{ #name::#v(ref err) => err.fmt(f), }
+            quote!{ #name::#v(ref err) => err.description(), }
         })
         .fold(quote::Tokens::new(), |mut cum, a| {
             cum.append(a);
             cum
         });
     quote!{
-        impl error::Error for #name {
+        impl ::std::error::Error for #name {
             fn description(&self) -> &str {
                 match *self {
                     #snips
@@ -63,16 +63,18 @@ fn impl_display(name: &syn::Ident, variants: &Vec<syn::Variant>) -> quote::Token
     let snips = variants.iter()
         .map(|var| {
             let v = &var.ident;
-            quote!{ #name::#v(ref err) => err.description(), }
+            quote!{ #name::#v(ref err) => err.fmt(f), }
         })
         .fold(quote::Tokens::new(), |mut cum, a| {
             cum.append(a);
             cum
         });
     quote!{
-        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-            match *self {
-                #snips
+        impl ::std::fmt::Display for Error {
+            fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                match *self {
+                    #snips
+                }
             }
         }
     }
