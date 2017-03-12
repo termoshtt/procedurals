@@ -1,5 +1,6 @@
 enum-error-derive
 ==================
+[![Build Status](https://travis-ci.org/termoshtt/enum-error-derive.svg?branch=master)](https://travis-ci.org/termoshtt/enum-error-derive)
 
 Derive Error traits for Enum Error struct
 
