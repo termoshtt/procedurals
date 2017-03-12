@@ -56,7 +56,7 @@ fn impl_display(name: &syn::Ident, variants: &Vec<syn::Variant>) -> quote::Token
     let snips = variants.iter()
         .map(|var| {
             let v = &var.ident;
-            quote!{ #name::#v(ref err) => err.fmt(f), }
+            quote!{ #name::#v(ref err) => err.fmt(f) }
         });
     quote!{
         impl ::std::fmt::Display for Error {
