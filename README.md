@@ -1,17 +1,17 @@
-enum-error-derive
-==================
-[![Crate](http://meritbadge.herokuapp.com/enum-error-derive)](https://crates.io/crates/enum-error-derive)
-[![docs.rs](https://docs.rs/enum-error-derive/badge.svg)](https://docs.rs/enum-error-derive)
-[![Build Status](https://travis-ci.org/termoshtt/enum-error-derive.svg?branch=master)](https://travis-ci.org/termoshtt/enum-error-derive)
+Procedurals
+===============
+[![Crate](http://meritbadge.herokuapp.com/procedurals)](https://crates.io/crates/procedurals)
+[![docs.rs](https://docs.rs/procedurals/badge.svg)](https://docs.rs/procedurals)
+[![Build Status](https://travis-ci.org/termoshtt/procedurals.svg?branch=master)](https://travis-ci.org/termoshtt/procedurals)
 
-Derive Error traits for Enum Error struct
+Collection of basic proc-macros
 
-Example
---------
+EnumError
+----------
 
 ```rust
 #[macro_use]
-extern crate enum_error_derive;
+extern crate procedurals;
 
 use std::{io, fmt};
 
