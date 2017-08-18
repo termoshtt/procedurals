@@ -6,6 +6,23 @@ Procedurals
 
 Collection of basic proc-macros
 
+IntoEnum
+---------
+
+```rust
+#[macro_use]
+extern crate procedurals;
+
+struct A {}
+struct B {}
+
+#[derive(IntoEnum)] // derives From<A> and From<B> for E
+enum E {
+    A(A),
+    B(B),
+}
+```
+
 EnumError
 ----------
 

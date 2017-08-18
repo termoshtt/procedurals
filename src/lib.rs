@@ -14,6 +14,14 @@ pub fn enum_error(input: TokenStream) -> TokenStream {
     gen.parse().unwrap()
 }
 
+#[proc_macro_derive(IntoEnum)]
+pub fn into_enum(input: TokenStream) -> TokenStream {
+    let s = input.to_string();
+    let ast = syn::parse_macro_input(&s).unwrap();
+    let gen = impl_into_enum(&ast);
+    gen.parse().unwrap()
+}
+
 fn impl_from_traits(name: &syn::Ident, variants: &Vec<syn::Variant>) -> quote::Tokens {
     let impls = variants.iter().map(|var| {
         let v = &var.ident;
@@ -80,5 +88,16 @@ fn impl_enum_error(ast: &syn::MacroInput) -> quote::Tokens {
             impl_error(&name, &variants),
         ],
     );
+    token
+}
+
+fn impl_into_enum(ast: &syn::MacroInput) -> quote::Tokens {
+    let name = &ast.ident;
+    let ref variants = match ast.body {
+        syn::Body::Enum(ref variants) => variants,
+        syn::Body::Struct(_) => unreachable!(),
+    };
+    let mut token = quote::Tokens::new();
+    token.append_all(&[impl_from_traits(&name, &variants)]);
     token
 }
