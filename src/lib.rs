@@ -15,32 +15,30 @@ pub fn enum_error(input: TokenStream) -> TokenStream {
 }
 
 fn impl_from_traits(name: &syn::Ident, variants: &Vec<syn::Variant>) -> quote::Tokens {
-    let impls = variants.iter()
-        .map(|var| {
-            let v = &var.ident;
-            let cont = match var.data {
-                syn::VariantData::Tuple(ref c) => c,
-                _ => unreachable!(),
-            };
-            assert!(cont.len() == 1, "Single Tuple is required");
-            let ctype = &cont[0].ty;
-            quote!{
+    let impls = variants.iter().map(|var| {
+        let v = &var.ident;
+        let cont = match var.data {
+            syn::VariantData::Tuple(ref c) => c,
+            _ => unreachable!(),
+        };
+        assert!(cont.len() == 1, "Single Tuple is required");
+        let ctype = &cont[0].ty;
+        quote!{
                 impl From<#ctype> for #name {
                     fn from(val: #ctype) -> Self {
                         #name::#v(val)
                     }
                 }
             }
-        });
+    });
     quote!{ #(#impls)* }
 }
 
 fn impl_error(name: &syn::Ident, variants: &Vec<syn::Variant>) -> quote::Tokens {
-    let snips = variants.iter()
-        .map(|var| {
-            let v = &var.ident;
-            quote!{ #name::#v(ref err) => err.description() }
-        });
+    let snips = variants.iter().map(|var| {
+        let v = &var.ident;
+        quote!{ #name::#v(ref err) => err.description() }
+    });
     quote!{
         impl ::std::error::Error for #name {
             fn description(&self) -> &str {
@@ -53,11 +51,10 @@ fn impl_error(name: &syn::Ident, variants: &Vec<syn::Variant>) -> quote::Tokens 
 }
 
 fn impl_display(name: &syn::Ident, variants: &Vec<syn::Variant>) -> quote::Tokens {
-    let snips = variants.iter()
-        .map(|var| {
-            let v = &var.ident;
-            quote!{ #name::#v(ref err) => err.fmt(f) }
-        });
+    let snips = variants.iter().map(|var| {
+        let v = &var.ident;
+        quote!{ #name::#v(ref err) => err.fmt(f) }
+    });
     quote!{
         impl ::std::fmt::Display for #name {
             fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
@@ -76,8 +73,12 @@ fn impl_enum_error(ast: &syn::MacroInput) -> quote::Tokens {
         syn::Body::Struct(_) => unreachable!(),
     };
     let mut token = quote::Tokens::new();
-    token.append_all(&[impl_from_traits(&name, &variants),
-                       impl_display(&name, &variants),
-                       impl_error(&name, &variants)]);
+    token.append_all(
+        &[
+            impl_from_traits(&name, &variants),
+            impl_display(&name, &variants),
+            impl_error(&name, &variants),
+        ],
+    );
     token
 }

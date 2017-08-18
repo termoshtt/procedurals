@@ -2,7 +2,7 @@
 #[macro_use]
 extern crate procedurals;
 
-use std::{io, fmt};
+use std::{fmt, io};
 
 #[derive(Debug, EnumError)]
 pub enum Error {
