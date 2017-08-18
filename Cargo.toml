@@ -1,11 +1,11 @@
 [package]
-name = "enum-error-derive"
-version = "0.1.1"
+name = "procedurals"
+version = "0.2.0"
 authors = ["Toshiki Teramura <toshiki.teramura@gmail.com>"]
 
-description = "Derive Error traits"
-documentation = "https://docs.rs/enum-error-derive/"
-repository = "https://github.com/termoshtt/enum-error-derive"
+description = "Collection of proc-macros"
+documentation = "https://docs.rs/procedurals/"
+repository = "https://github.com/termoshtt/procedurals"
 keywords = ["proc_macro"]
 license = "MIT"
 
