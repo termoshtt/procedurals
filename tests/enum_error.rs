@@ -1,6 +1,6 @@
 
 #[macro_use]
-extern crate enum_error_derive;
+extern crate procedurals;
 
 use std::{io, fmt};
 
