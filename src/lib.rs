@@ -32,7 +32,8 @@ pub fn newtype(input: TokenStream) -> TokenStream {
     let name = &ast.ident;
     let field = get_basetype(&ast);
     let from = impl_newtype_from(&name, &field);
-    let tokens = quote!{ #from };
+    let deref = impl_newtype_deref(&name, &field);
+    let tokens = quote!{ #from #deref };
     tokens.parse().unwrap()
 }
 
@@ -95,6 +96,20 @@ fn impl_newtype_from(name: &syn::Ident, field: &syn::Field) -> quote::Tokens {
             }
         }
     }
+}
+
+fn impl_newtype_deref(name: &syn::Ident, field: &syn::Field) -> quote::Tokens {
+    let base = &field.ty;
+    quote!{
+        impl ::std::ops::Deref for #name {
+            type Target = #base;
+            fn deref(&self) -> &Self::Target { &self.0 }
+        }
+        impl ::std::ops::DerefMut for #name {
+            fn deref_mut(&mut self) -> &mut Self::Target { &mut self.0 }
+        }
+    }
+
 }
 
 fn impl_error(name: &syn::Ident, variants: &Vec<syn::Variant>) -> quote::Tokens {
