@@ -6,17 +6,12 @@ extern crate quote;
 
 use proc_macro::TokenStream;
 
-fn into_ast(input: TokenStream) -> syn::DeriveInput {
-    let s = input.to_string();
-    syn::parse_macro_input(&s).unwrap()
-}
-
 #[proc_macro_derive(EnumError)]
 pub fn enum_error(input: TokenStream) -> TokenStream {
     let ast = into_ast(input);
     let name = &ast.ident;
     let variants = get_enum_variants(&ast);
-    let froms = impl_froms(&name, &variants);
+    let froms = impl_into_enum(&name, &variants);
     let display = impl_display(&name, &variants);
     let error = impl_error(&name, &variants);
     let tokens = quote!{ #froms #display #error };
@@ -28,7 +23,22 @@ pub fn into_enum(input: TokenStream) -> TokenStream {
     let ast = into_ast(input);
     let name = &ast.ident;
     let variants = get_enum_variants(&ast);
-    impl_froms(&name, &variants).parse().unwrap()
+    impl_into_enum(&name, &variants).parse().unwrap()
+}
+
+#[proc_macro_derive(NewType)]
+pub fn newtype(input: TokenStream) -> TokenStream {
+    let ast = into_ast(input);
+    let name = &ast.ident;
+    let field = get_basetype(&ast);
+    let from = impl_newtype_from(&name, &field);
+    let tokens = quote!{ #from };
+    tokens.parse().unwrap()
+}
+
+fn into_ast(input: TokenStream) -> syn::DeriveInput {
+    let s = input.to_string();
+    syn::parse_macro_input(&s).unwrap()
 }
 
 fn get_enum_variants(ast: &syn::MacroInput) -> &Vec<syn::Variant> {
@@ -38,17 +48,25 @@ fn get_enum_variants(ast: &syn::MacroInput) -> &Vec<syn::Variant> {
     }
 }
 
-fn impl_from(from: &syn::Ty, to: &syn::Ident, val: &syn::Ident) -> quote::Tokens {
-    quote!{
-        impl From<#from> for #to {
-            fn from(val: #from) -> Self {
-                #to::#val(val)
+fn get_basetype(ast: &syn::MacroInput) -> &syn::Field {
+    match ast.body {
+        syn::Body::Enum(_) => unreachable!("Enum is not supported"),
+        syn::Body::Struct(ref vd) => {
+            match *vd {
+                syn::VariantData::Struct(_) => unreachable!("Must be tuple"),
+                syn::VariantData::Tuple(ref t) => {
+                    if t.len() > 1 {
+                        unreachable!("Must be one type");
+                    }
+                    &t[0]
+                }
+                syn::VariantData::Unit => unreachable!("Must be tuple"),
             }
         }
     }
 }
 
-fn impl_froms(name: &syn::Ident, variants: &Vec<syn::Variant>) -> quote::Tokens {
+fn impl_into_enum(name: &syn::Ident, variants: &Vec<syn::Variant>) -> quote::Tokens {
     let impls = variants.iter().map(|var| {
         let v = &var.ident;
         let cont = match var.data {
@@ -57,9 +75,26 @@ fn impl_froms(name: &syn::Ident, variants: &Vec<syn::Variant>) -> quote::Tokens 
         };
         assert!(cont.len() == 1, "Single Tuple is required");
         let ctype = &cont[0].ty;
-        impl_from(ctype, name, v)
+        quote!{
+            impl From<#ctype> for #name {
+                fn from(val: #ctype) -> Self {
+                    #name::#v(val)
+                }
+            }
+        }
     });
     quote!{ #(#impls)* }
+}
+
+fn impl_newtype_from(name: &syn::Ident, field: &syn::Field) -> quote::Tokens {
+    let base = &field.ty;
+    quote!{
+        impl From<#base> for #name {
+            fn from(val: #base) -> Self {
+                Self(val)
+            }
+        }
+    }
 }
 
 fn impl_error(name: &syn::Ident, variants: &Vec<syn::Variant>) -> quote::Tokens {
