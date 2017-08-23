@@ -6,23 +6,49 @@ extern crate quote;
 
 use proc_macro::TokenStream;
 
+fn into_ast(input: TokenStream) -> syn::DeriveInput {
+    let s = input.to_string();
+    syn::parse_macro_input(&s).unwrap()
+}
+
 #[proc_macro_derive(EnumError)]
 pub fn enum_error(input: TokenStream) -> TokenStream {
-    let s = input.to_string();
-    let ast = syn::parse_macro_input(&s).unwrap();
-    let gen = impl_enum_error(&ast);
-    gen.parse().unwrap()
+    let ast = into_ast(input);
+    let name = &ast.ident;
+    let variants = get_enum_variants(&ast);
+    let froms = impl_froms(&name, &variants);
+    let display = impl_display(&name, &variants);
+    let error = impl_error(&name, &variants);
+    let tokens = quote!{ #froms #display #error };
+    tokens.parse().unwrap()
 }
 
 #[proc_macro_derive(IntoEnum)]
 pub fn into_enum(input: TokenStream) -> TokenStream {
-    let s = input.to_string();
-    let ast = syn::parse_macro_input(&s).unwrap();
-    let gen = impl_into_enum(&ast);
-    gen.parse().unwrap()
+    let ast = into_ast(input);
+    let name = &ast.ident;
+    let variants = get_enum_variants(&ast);
+    impl_froms(&name, &variants).parse().unwrap()
 }
 
-fn impl_from_traits(name: &syn::Ident, variants: &Vec<syn::Variant>) -> quote::Tokens {
+fn get_enum_variants(ast: &syn::MacroInput) -> &Vec<syn::Variant> {
+    match ast.body {
+        syn::Body::Enum(ref variants) => variants,
+        syn::Body::Struct(_) => unreachable!("Struct is not supported"),
+    }
+}
+
+fn impl_from(from: &syn::Ty, to: &syn::Ident, val: &syn::Ident) -> quote::Tokens {
+    quote!{
+        impl From<#from> for #to {
+            fn from(val: #from) -> Self {
+                #to::#val(val)
+            }
+        }
+    }
+}
+
+fn impl_froms(name: &syn::Ident, variants: &Vec<syn::Variant>) -> quote::Tokens {
     let impls = variants.iter().map(|var| {
         let v = &var.ident;
         let cont = match var.data {
@@ -31,13 +57,7 @@ fn impl_from_traits(name: &syn::Ident, variants: &Vec<syn::Variant>) -> quote::T
         };
         assert!(cont.len() == 1, "Single Tuple is required");
         let ctype = &cont[0].ty;
-        quote!{
-                impl From<#ctype> for #name {
-                    fn from(val: #ctype) -> Self {
-                        #name::#v(val)
-                    }
-                }
-            }
+        impl_from(ctype, name, v)
     });
     quote!{ #(#impls)* }
 }
@@ -72,32 +92,4 @@ fn impl_display(name: &syn::Ident, variants: &Vec<syn::Variant>) -> quote::Token
             }
         }
     }
-}
-
-fn impl_enum_error(ast: &syn::MacroInput) -> quote::Tokens {
-    let name = &ast.ident;
-    let ref variants = match ast.body {
-        syn::Body::Enum(ref variants) => variants,
-        syn::Body::Struct(_) => unreachable!(),
-    };
-    let mut token = quote::Tokens::new();
-    token.append_all(
-        &[
-            impl_from_traits(&name, &variants),
-            impl_display(&name, &variants),
-            impl_error(&name, &variants),
-        ],
-    );
-    token
-}
-
-fn impl_into_enum(ast: &syn::MacroInput) -> quote::Tokens {
-    let name = &ast.ident;
-    let ref variants = match ast.body {
-        syn::Body::Enum(ref variants) => variants,
-        syn::Body::Struct(_) => unreachable!(),
-    };
-    let mut token = quote::Tokens::new();
-    token.append_all(&[impl_from_traits(&name, &variants)]);
-    token
 }
