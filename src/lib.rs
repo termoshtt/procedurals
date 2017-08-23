@@ -91,7 +91,7 @@ fn impl_newtype_from(name: &syn::Ident, field: &syn::Field) -> quote::Tokens {
     quote!{
         impl From<#base> for #name {
             fn from(val: #base) -> Self {
-                Self(val)
+                #name(val)
             }
         }
     }
