@@ -6,6 +6,7 @@ Procedurals
 
 Collection of basic proc-macros
 
+
 IntoEnum
 ---------
 
@@ -29,7 +30,6 @@ EnumError
 ```rust
 #[macro_use]
 extern crate procedurals;
-
 use std::{io, fmt};
 
 #[derive(Debug, EnumError)] // EnumError derives From<*>, fmt::Display and error::Error
@@ -37,18 +37,17 @@ pub enum Error {
     IO(io::Error),
     Fmt(fmt::Error),
 }
+```
 
-fn io_error() -> Result<(), io::Error> {
-    Ok(())
-}
+NewType
+---------
 
-fn fmt_error() -> Result<(), fmt::Error> {
-    Ok(())
-}
+```rust
+#[macro_use]
+extern crate procedurals;
 
-fn merged_error() -> Result<(), Error> {
-    io_error()?;
-    fmt_error()?;
-    Ok(())
-}
+struct B {}
+
+#[derive(NewType)] // NewType derives From<B>, Deref, and DerefMut
+struct A(B);
 ```
