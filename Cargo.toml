@@ -1,6 +1,6 @@
 [package]
 name = "procedurals"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["Toshiki Teramura <toshiki.teramura@gmail.com>"]
 
 description = "Collection of proc-macros"
@@ -13,5 +13,5 @@ license = "MIT"
 proc-macro = true
 
 [dependencies]
-syn = "0.11.3"
-quote = "0.3.15"
+syn = "0.11"
+quote = "0.3"
