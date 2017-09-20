@@ -23,3 +23,10 @@ fn newtype() {
     n.func(); // test Deref
     n.func_mut(); // test DerefMut
 }
+
+pub struct BaseT<A> {
+    pub a: A,
+}
+
+#[derive(NewType)]
+pub struct NewT<A>(BaseT<A>);
