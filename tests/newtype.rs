@@ -24,9 +24,9 @@ fn newtype() {
     n.func_mut(); // test DerefMut
 }
 
-struct BaseT<A> {
-    a: A,
+pub struct BaseT<A> {
+    pub a: A,
 }
 
 #[derive(NewType)]
-struct NewT<A>(Base<A>);
+pub struct NewT<A>(BaseT<A>);

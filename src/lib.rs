@@ -112,7 +112,6 @@ fn impl_newtype_deref(ast: &syn::MacroInput) -> quote::Tokens {
             fn deref_mut(&mut self) -> &mut Self::Target { &mut self.0 }
         }
     }
-
 }
 
 fn impl_error(ast: &syn::MacroInput) -> quote::Tokens {
