@@ -95,6 +95,12 @@ fn impl_newtype_from(ast: &syn::MacroInput) -> quote::Tokens {
                 #name(val)
             }
         }
+
+        impl #impl_generics Into<#base> for #name #ty_generics #where_clause {
+            fn into(self) -> #base {
+                self.0
+            }
+        }
     }
 }
 

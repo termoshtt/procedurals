@@ -48,6 +48,6 @@ extern crate procedurals;
 
 struct B {}
 
-#[derive(NewType)] // NewType derives From<B>, Deref, and DerefMut
+#[derive(NewType)] // NewType derives From<B>, Into<B>, Deref, and DerefMut
 struct A(B);
 ```

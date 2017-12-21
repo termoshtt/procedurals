@@ -2,31 +2,32 @@
 #[macro_use]
 extern crate procedurals;
 
-struct Base {}
+pub struct Base<A> {
+    pub a: A,
+}
 
-impl Base {
+#[derive(NewType)]
+pub struct New<A>(Base<A>);
+
+impl<A> Base<A> {
+    fn new(a: A) -> Self {
+        Self { a }
+    }
+
     fn func(&self) {
         println!("This is B");
     }
+
     fn func_mut(&mut self) {
         println!("Get mutable ref of B");
     }
 }
 
-#[derive(NewType)]
-struct New(Base);
-
 #[test]
 fn newtype() {
-    let b = Base {};
-    let mut n: New = b.into(); // test From
+    let b: Base<i32> = Base::new(1);
+    let mut n: New<i32> = b.into(); // test From
     n.func(); // test Deref
     n.func_mut(); // test DerefMut
+    let _b: Base<i32> = n.into();
 }
-
-pub struct BaseT<A> {
-    pub a: A,
-}
-
-#[derive(NewType)]
-pub struct NewT<A>(BaseT<A>);
