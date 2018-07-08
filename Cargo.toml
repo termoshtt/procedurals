@@ -1,6 +1,6 @@
 [package]
 name = "procedurals"
-version = "0.3.1"
+version = "0.3.2-alpha.0"
 authors = ["Toshiki Teramura <toshiki.teramura@gmail.com>"]
 
 description = "Collection of proc-macros"
